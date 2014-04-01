@@ -99,6 +99,41 @@ void WebServer::print(char c)
     _put((uint8_t)c);
 }
 
+void WebServer::print(unsigned char number, int base)
+{
+    printNumber((unsigned long)number, base);
+}
+
+void WebServer::print(unsigned int number, int base)
+{
+    printNumber((unsigned long)number, base);
+}
+
+void WebServer::print(unsigned long number, int base)
+{
+    printNumber(number, base);
+}
+
+void WebServer::print(int number, int base)
+{
+    print((long)number, base);
+}
+
+void WebServer::print(long number, int base)
+{
+    if ((base == 10) && (number < 0))
+    {
+        print(F("-"));
+        number = -number;
+    }
+    printNumber((unsigned long)number, base);
+}
+
+void WebServer::print(double number, int digits)
+{
+    printFloat(number, digits);
+}
+
 // Println possibilities
 void WebServer::println()
 {
@@ -129,6 +164,41 @@ void WebServer::println(char c)
      println();
 }
 
+void WebServer::println(unsigned char number, int base)
+{
+    print(number, base);
+    println();
+}
+
+void WebServer::println(unsigned int number, int base)
+{
+    print(number, base);
+    println();
+}
+
+void WebServer::println(unsigned long number, int base)
+{
+    print(number, base);
+    println();
+}
+
+void WebServer::println(int number, int base)
+{
+    print(number, base);
+    println();
+}
+
+void WebServer::println(long number, int base)
+{
+    print(number, base);
+    println();
+}
+
+void WebServer::println(double number, int digits)
+{
+    print(number, digits);
+    println();
+}
 
 // Put one byte into buffer and send the buffer if it is full
 void WebServer::_put(uint8_t c)
@@ -139,9 +209,10 @@ void WebServer::_put(uint8_t c)
 }
 
 // HTTP headers
-void WebServer::http200()
+void WebServer::http200(fileType type)
 {
     println(F("HTTP/1.1 200 OK"));
+    _contentType(type);
     println();
 }
 
@@ -151,6 +222,12 @@ void WebServer::http200(unsigned long size, fileType type)
     print(F("Content-size: "));
     printNumber(size, 10);
     println();
+    _contentType(type);
+    println();
+}
+
+void WebServer::_contentType(fileType type)
+{
     if (type)
     {
         print(F("Content-type: "));
@@ -166,7 +243,6 @@ void WebServer::http200(unsigned long size, fileType type)
                 println(F("text/plain")); break;
         }
     }
-    println();
 }
 
 void WebServer::http404()
@@ -182,7 +258,7 @@ void WebServer::send()
     _position = 0;
 }
 
-// Got from Print.cpp
+// Got from Print.cpp and modified
 void WebServer::printNumber(unsigned long n, uint8_t base) 
 {
     char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
@@ -201,4 +277,42 @@ void WebServer::printNumber(unsigned long n, uint8_t base)
     } while(n);
 
     print(str);
+}
+
+void WebServer::printFloat(double number, uint8_t digits) 
+{ 
+  
+    if (isnan(number)) { print(F("NaN")); return; }
+    if (isinf(number)) { print(F("Inf")); return; }
+    if (number > 4294967040.0) { print (F("+Ovf")); return; } // constant determined empirically
+    if (number <-4294967040.0) { print (F("-Ovf")); return; } // constant determined empirically
+  
+    // Handle negative numbers
+    if (number < 0.0)
+    {
+        print(F("-"));
+        number = -number;
+    }
+
+    // Round correctly so that print(1.999, 2) prints as "2.00"
+    double rounding = 0.5;
+    for (uint8_t i=0; i<digits; ++i) rounding /= 10.0;
+    number += rounding;
+
+    // Extract the integer part of the number and print it
+    unsigned long int_part = (unsigned long)number;
+    double remainder = number - (double)int_part;
+    printNumber(int_part);
+
+    // Print the decimal point, but only if there are digits beyond
+    if (digits > 0) print(F(".")); 
+
+    // Extract digits from the remainder one at a time
+    while (digits-- > 0)
+    {
+        remainder *= 10.0;
+        int toPrint = int(remainder);
+        printNumber(toPrint);
+        remainder -= toPrint; 
+    } 
 }

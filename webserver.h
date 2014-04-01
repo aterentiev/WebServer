@@ -9,7 +9,9 @@
 #define MAX_REQUEST_SIZE 20
 
 // Response buffer length: optimum 576
+#ifndef RESPONSE_BUF_LEN
 #define RESPONSE_BUF_LEN 144
+#endif
 
 class WebServer
 {
@@ -19,11 +21,11 @@ class WebServer
         // Must be extended with supported data types
         enum fileType
         {
-            None = 0,
-            TXT,
-            HTML,
-            JPG,
-            PNG
+            None = 0, // If fileType == None, the Content-type parameter will not be generated
+            TXT,      // Content-type: text/plain
+            HTML,     // Content-type: text/html
+            JPG,      // Content-type: image/jpeg
+            PNG       // Content-type: image/png
         };
 
         typedef void (*WebServerCallbackType)(const char *request);
@@ -46,37 +48,35 @@ class WebServer
         boolean isRequested(const char *requested);
 
         // Print nad println functions to put the data to the buffer and send if the buffer is full
+        // This is the full list from Print except printing Printable
         void print(const __FlashStringHelper *);
         void print(const String &);
         void print(const char[]);
         void print(char);
-/* ToDo:
-        void print(unsigned char, int = DEC);
-        void print(int, int = DEC);
-        void print(unsigned int, int = DEC);
-        void print(long, int = DEC);
-        void print(unsigned long, int = DEC);
+        void print(unsigned char, int = 10);
+        void print(int, int = 10);
+        void print(unsigned int, int = 10);
+        void print(long, int = 10);
+        void print(unsigned long, int = 10);
         void print(double, int = 2);
-*/
         void println(const __FlashStringHelper *);
         void println(const String &s);
         void println(const char[]);
         void println(char);
-/* ToDo:
-        void println(unsigned char, int = DEC);
-        void println(int, int = DEC);
-        void println(unsigned int, int = DEC);
-        void println(long, int = DEC);
-        void println(unsigned long, int = DEC);
+        void println(unsigned char, int = 10);
+        void println(int, int = 10);
+        void println(unsigned int, int = 10);
+        void println(long, int = 10);
+        void println(unsigned long, int = 10);
         void println(double, int = 2);
-*/
 
         void println(void);
 
-        void printNumber(unsigned long n, uint8_t base);
+        void printNumber(unsigned long n, uint8_t base = 10);
+        void printFloat(double number, uint8_t digits = 7);
 
         // Put the HTTP answer into the buffer
-        void http200();
+        void http200(fileType type = None);
         void http200(unsigned long size, fileType type = None);
         void http404();
 
@@ -93,6 +93,9 @@ class WebServer
         // Client and server objects
         EthernetServer *_server;
 	EthernetClient _client;
+
+        // Helpers
+        void _contentType(fileType type = None);
 
         // Callback placeholder
         WebServerCallbackType _callback;

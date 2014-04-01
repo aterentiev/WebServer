@@ -30,7 +30,7 @@ void webServer_OnRequest(const char *request)
     }
     if (webServer.isRequested("345")) 
     {
-        webServer.http200();
+        webServer.http200(WebServer::HTML);
         webServer.print(F("something 345 "));
         webServer.print(F("even more something "));
         webServer.print(F("and more "));
