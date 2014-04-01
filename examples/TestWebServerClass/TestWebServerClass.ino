@@ -1,5 +1,8 @@
 #include <SPI.h>
 #include <Ethernet.h>
+
+//#define RESPONSE_BUF_LEN 144 // define this value for the buffer size, 144 bytes is the default
+
 #include <webserver.h>
 
 EthernetServer ethernetServer(80); // Web Server Port

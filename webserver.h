@@ -86,7 +86,7 @@ class WebServer
     private:
 
         // Send buffer, its position and a function to put one byte into the buffer
-        uint8_t _position;
+        uint16_t _position;
         uint8_t _response[RESPONSE_BUF_LEN];
         void _put(uint8_t c);
 

@@ -20,7 +20,7 @@ void WebServer::Initialize(byte mac[6], byte ip[4])
 void WebServer::Do()
 {
     _client = _server->available();
-    uint8_t i = 0;
+    uint8_t i = 0; // one byte is enough for request
     if (_client)
     {
         while (_client.connected())
