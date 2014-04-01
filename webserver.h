@@ -8,11 +8,6 @@
 // Maximum GET request size
 #define MAX_REQUEST_SIZE 20
 
-// Response buffer length: optimum 576
-#ifndef RESPONSE_BUF_LEN
-#define RESPONSE_BUF_LEN 144
-#endif
-
 class WebServer
 {
 
@@ -31,7 +26,7 @@ class WebServer
         typedef void (*WebServerCallbackType)(const char *request);
         char request[MAX_REQUEST_SIZE + 4];
 
-        WebServer(EthernetServer *server);
+        WebServer(EthernetServer *server, uint8_t bufsize);
         ~WebServer();
 
         // MAC and IP addresses initializer
@@ -86,8 +81,9 @@ class WebServer
     private:
 
         // Send buffer, its position and a function to put one byte into the buffer
-        uint16_t _position;
-        uint8_t _response[RESPONSE_BUF_LEN];
+        uint8_t _position;
+        uint8_t *_response;
+        uint8_t _bufsize;
         void _put(uint8_t c);
 
         // Client and server objects

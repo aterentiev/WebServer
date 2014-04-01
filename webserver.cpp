@@ -1,14 +1,16 @@
 #include "webserver.h"
 
-WebServer::WebServer(EthernetServer *srv)
+WebServer::WebServer(EthernetServer *srv, uint8_t bufsize)
 {
     _position = 0;
     _server = srv;
+    _bufsize = bufsize;
+    _response = new uint8_t[_bufsize];
 }
 
 WebServer::~WebServer()
 {
-
+    delete[] _response;
 }
 
 void WebServer::Initialize(byte mac[6], byte ip[4])
@@ -205,7 +207,7 @@ void WebServer::_put(uint8_t c)
 {
     _response[_position] = c;
     _position++;
-    if (_position == RESPONSE_BUF_LEN) send();
+    if (_position == _bufsize) send();
 }
 
 // HTTP headers

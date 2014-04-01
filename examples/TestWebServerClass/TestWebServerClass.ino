@@ -1,12 +1,9 @@
 #include <SPI.h>
 #include <Ethernet.h>
-
-//#define RESPONSE_BUF_LEN 144 // define this value for the buffer size, 144 bytes is the default
-
 #include <webserver.h>
 
 EthernetServer ethernetServer(80); // Web Server Port
-WebServer webServer(&ethernetServer);
+WebServer webServer(&ethernetServer, 144); // 144 = Send buffer size, in bytes
 
 void setup()
 {
@@ -23,11 +20,19 @@ void loop()
 
 void webServer_OnRequest(const char *request)
 {
+    if (webServer.isRequested("")) // default website
+    {
+        webServer.http200(WebServer::HTML);
+        webServer.print(F("<h2>Here I am!</h2><br/>"));
+        webServer.print(F("<a href=\"http://aterentiev.livejournal.com\">http://aterentiev.livejournal.com</a><br/>"));
+        webServer.print(F("Author: Alexandre Terentiev"));
+        webServer.send();
+        return;
+    }
     if (webServer.isRequested("123")) 
     {
-        webServer.http200();
-        webServer.print(F("something 123 "));
-        webServer.print(F("even more <b>something</b> 123"));
+        webServer.http200(WebServer::HTML);
+        webServer.print(F("something stupid 123"));
         webServer.send();
         return;
     }
