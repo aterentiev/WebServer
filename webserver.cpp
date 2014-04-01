@@ -4,7 +4,11 @@ WebServer::WebServer(EthernetServer *srv, uint8_t bufsize)
 {
     _position = 0;
     _server = srv;
-    _bufsize = bufsize;
+    if (!bufsize) {
+        _bufsize = 144; // Default buffer size if bufsize = 0
+    } else {
+        _bufsize = bufsize;
+    }
     _response = new uint8_t[_bufsize];
 }
 

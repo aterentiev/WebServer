@@ -3,7 +3,8 @@
 #include <webserver.h>
 
 EthernetServer ethernetServer(80); // Web Server Port
-WebServer webServer(&ethernetServer, 144); // 144 = Send buffer size, in bytes
+WebServer webServer(&ethernetServer); // Default buffer size is 144 bytes
+//WebServer webServer(&ethernetServer, 200); // Example of defining other buffer size as 144
 
 void setup()
 {

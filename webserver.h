@@ -26,7 +26,7 @@ class WebServer
         typedef void (*WebServerCallbackType)(const char *request);
         char request[MAX_REQUEST_SIZE + 4];
 
-        WebServer(EthernetServer *server, uint8_t bufsize);
+        WebServer(EthernetServer *server, uint8_t bufsize = 144);
         ~WebServer();
 
         // MAC and IP addresses initializer
