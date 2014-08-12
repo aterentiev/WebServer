@@ -1,12 +1,24 @@
 #ifndef __webserver_h__
 #define __webserver_h__
 
+// Comment this for disabling SD card support
+#define USE_SD_CARD 1
+
+#ifdef USE_SD_CARD
+#include <SD.h>
+#endif
+
 #include <SPI.h>
 #include <Ethernet.h>
 #include <Arduino.h>
 
-// Maximum GET request size
+// Maximum GET request length
 #define MAX_REQUEST_SIZE 20
+
+#define WEBSERVER_HTTP200 F("200 OK")
+#define WEBSERVER_HTTP404 F("404 Not Found")
+
+#define WEBSERVER_DEFAULTPAGE F("<!DOCTYPE html><html lang=\"de-DE\"><head><META http-equiv=\"refresh\" content=\"0;URL=/index.htm\"></head></html>")
 
 class WebServer
 {
@@ -19,8 +31,12 @@ class WebServer
             None = 0, // If fileType == None, the Content-type parameter will not be generated
             TXT,      // Content-type: text/plain
             HTML,     // Content-type: text/html
+            XML,      // Content-type: text/xml
             JPG,      // Content-type: image/jpeg
-            PNG       // Content-type: image/png
+            PNG,      // Content-type: image/png
+            ICO,      // Content-type: image/x-icon
+            JSON,     // Content-type: application/json
+            JS        // Content-type: application/x-javascript
         };
 
         typedef void (*WebServerCallbackType)(const char *request);
@@ -41,8 +57,9 @@ class WebServer
 
         // Check if the "requested" file was requested
         boolean isRequested(const char *requested);
+        char *Requested();
 
-        // Print nad println functions to put the data to the buffer and send if the buffer is full
+        // Print and println functions to put the data to the buffer and send if the buffer is full
         // This is the full list from Print except printing Printable
         void print(const __FlashStringHelper *);
         void print(const String &);
@@ -70,10 +87,15 @@ class WebServer
         void printNumber(unsigned long n, uint8_t base = 10);
         void printFloat(double number, uint8_t digits = 7);
 
+#ifdef USE_SD_CARD
+        boolean printFile(char *fileName);
+#endif
+
         // Put the HTTP answer into the buffer
-        void http200(fileType type = None);
-        void http200(unsigned long size, fileType type = None);
+        void http200(fileType type);
+        void http200(fileType type, unsigned long size);
         void http404();
+        fileType contentType(char *filename);
 
         // Send the rest of the data buffer if any 
         void send();
@@ -88,7 +110,7 @@ class WebServer
 
         // Client and server objects
         EthernetServer *_server;
-	EthernetClient _client;
+        EthernetClient _client;
 
         // Helpers
         void _contentType(fileType type = None);
