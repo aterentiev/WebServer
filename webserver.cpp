@@ -1,4 +1,4 @@
-#include "WebServer.h"
+#include "webserver.h"
 
 WebServer::WebServer(EthernetServer *srv, uint8_t bufsize)
 {
@@ -69,12 +69,7 @@ void WebServer::detachInterrupt()
 
 boolean WebServer::isRequested(const char *requested)
 {
-    return (strcasecmp(&request[5], requested) == 0);         
-}
-
-char *WebServer::Requested()
-{
-    return &request[5];
+    return (strcmp(&request[5], requested) == 0);         
 }
 
 // Print possibilities
@@ -144,29 +139,6 @@ void WebServer::print(double number, int digits)
 {
     printFloat(number, digits);
 }
-
-#ifdef USE_SD_CARD
-boolean WebServer::printFile(char *fileName)
-{
-    File myFile = SD.open(fileName);
-    if (myFile)
-    {
-        http200(contentType(fileName), myFile.size());
-        send(); // Empty buffer
-        while (myFile.available())
-        {
-            int x = myFile.read(_response, _bufsize);
-            _position = x;
-            send();
-        } 
-        myFile.close();
-        return true; // The file was sent correctly
-    } else {
-        myFile.close();
-        return false; // There was no such file
-    }
-}
-#endif
 
 // Println possibilities
 void WebServer::println()
@@ -245,22 +217,18 @@ void WebServer::_put(uint8_t c)
 // HTTP headers
 void WebServer::http200(fileType type)
 {
-    http200(type, 0);
+    println(F("HTTP/1.1 200 OK"));
+    _contentType(type);
+    println();
 }
 
-void WebServer::http200(fileType type, unsigned long size)
+void WebServer::http200(unsigned long size, fileType type)
 {
     println(F("HTTP/1.1 200 OK"));
-    println(F("Cache-Control: no-store, no-cache, must-revalidate, max-age=0"));
-    println(F("Expires: Thu, 01 Jan 1970 00:00:00 GMT"));
-    if (size != 0)
-    {
-        print(F("Content-Length: "));
-        printNumber(size, 10);
-        println();
-    }
+    print(F("Content-size: "));
+    printNumber(size, 10);
+    println();
     _contentType(type);
-    println(F("Connection: close"));
     println();
 }
 
@@ -268,46 +236,24 @@ void WebServer::_contentType(fileType type)
 {
     if (type)
     {
-        print(F("Content-Type: "));
+        print(F("Content-type: "));
         switch (type)
         {
             case HTML:
                 println(F("text/html")); break;
-            case XML:
-                println(F("text/xml")); break;
             case JPG:
                 println(F("image/jpeg")); break;
             case PNG:
                 println(F("image/png")); break;
-            case ICO:
-                println(F("image/x-icon")); break;
-            case JSON:
-                println(F("application/json")); break;
-            case JS:
-                println(F("application/x-javascript")); break;
             default: // == TXT
                 println(F("text/plain")); break;
         }
     }
 }
 
-WebServer::fileType WebServer::contentType(char *filename)
-{
-    if (strcasestr(filename, ".htm"))  { return HTML; }
-    if (strcasestr(filename, ".xml"))  { return XML; }
-    if (strcasestr(filename, ".jpg"))  { return JPG; }
-    if (strcasestr(filename, ".png"))  { return PNG; }
-    if (strcasestr(filename, ".ico"))  { return ICO; }
-    if (strcasestr(filename, ".json")) { return JSON; }
-    if (strcasestr(filename, ".js"))   { return JS; }
-    return TXT;
-}
-
-
 void WebServer::http404()
 {
     println(F("HTTP/1.1 404 File not found"));
-    println(F("Connection: close"));
     println();
 }
 
